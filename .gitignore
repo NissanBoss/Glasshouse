@@ -15,3 +15,9 @@ Thumbs.db
 # help people avoid.
 *.report
 *.report.txt
+
+# Test binaries built into the tree, because Application Control on some
+# Windows machines blocks running them from the temp directory.
+/gh-linux
+/gh-test-linux
+/glasshouse-test.exe

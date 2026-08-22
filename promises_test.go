@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -161,5 +162,49 @@ func TestGapsAreReportedAsGaps(t *testing.T) {
 	// And it must not be counted among the things we actually established.
 	if strings.Contains(text, cat.ui("fix.settable")+" ") {
 		t.Error("an unreadable finding was counted as a settable one")
+	}
+}
+
+// Running another program is more surface than reading a file. macOS keeps
+// its hardware identifiers in the IORegistry and gives Go no way in without
+// cgo, so that one platform is allowed to ask Apple's own tools and no
+// other file is. If this ever needs relaxing it should be a decision, not a
+// drift.
+func TestExecIsConfinedToMac(t *testing.T) {
+	entries, err := os.ReadDir(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range entries {
+		name := e.Name()
+		if !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		src, err := os.ReadFile(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if bytes.Contains(src, []byte("os/exec")) && name != "checks_darwin.go" {
+			t.Errorf("%s runs another program; only checks_darwin.go may", name)
+		}
+	}
+
+	// And what it runs has to stay Apple's own read-only tools, named by
+	// absolute path so nothing on PATH can stand in for them.
+	src, err := os.ReadFile("checks_darwin.go")
+	if err != nil {
+		t.Skip("no macOS checks in this tree")
+	}
+	tools := regexp.MustCompile(`"(/[^"]+)":\s*true`).FindAllStringSubmatch(string(src), -1)
+	if len(tools) == 0 {
+		t.Fatal("could not find the allowlist, so it is not being checked")
+	}
+	if len(tools) > 4 {
+		t.Errorf("the allowlist has grown to %d tools; keep it small on purpose", len(tools))
+	}
+	for _, m := range tools {
+		if !strings.HasPrefix(m[1], "/usr/bin/") && !strings.HasPrefix(m[1], "/usr/sbin/") {
+			t.Errorf("%s is not a stock system path", m[1])
+		}
 	}
 }

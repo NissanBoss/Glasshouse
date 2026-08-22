@@ -1,4 +1,5 @@
-# glasshouse
+| Network | Configured DNS resolvers, and whether a local stub answers them |
+# Glasshouse
 
 See what your computer says about you, and which parts of it you can
 actually do something about.
@@ -22,7 +23,7 @@ They never tell you which problems are unsolvable, so people spend
 weekends trying to remove things that cannot be removed, and come away
 believing they succeeded.
 
-glasshouse would rather say the unwelcome thing. If your CPU has Intel Boot
+Glasshouse would rather say the unwelcome thing. If your CPU has Intel Boot
 Guard fused, coreboot is not an option for you, and no amount of effort
 changes that. Knowing it is worth more than another registry tweak.
 
@@ -34,7 +35,7 @@ world shares. Tor Browser refuses to let you resize its window for exactly
 this reason: its privacy comes from every user looking identical, not from
 clever configuration.
 
-So glasshouse reports. It does not apply a pile of tweaks, and when it
+So Glasshouse reports. It does not apply a pile of tweaks, and when it
 suggests one, it tries to be honest about what the change costs.
 
 ## What it will not do
@@ -119,9 +120,14 @@ so a half-finished translation is useful on the day you start it.
 | Telemetry | Telemetry level, upload service, error reporting, activity history, Recall |
 | Network | Configured DNS resolvers |
 
-Windows for now. Linux and macOS expose most of the same things through
-`/sys` and are the next thing to write. On those systems the tool says so
-instead of reporting an empty machine as a clean one.
+Windows, Linux and macOS. Each reads the same ideas from a different place:
+the registry and SMBIOS on Windows, /sys and /proc on Linux, the IORegistry
+on macOS.
+
+The checks differ where the systems genuinely differ, and the report says so
+rather than pretending they are the same. The system UUID is a good example:
+Windows hands it to any program that asks, while Linux keeps it root-only,
+so running unprivileged there reports a gap instead of a value.
 
 ## Tests
 

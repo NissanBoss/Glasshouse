@@ -188,11 +188,7 @@ func checkBoardSerial() []Finding {
 			continue
 		}
 		s := e.text(serialAt)
-		// Boards that were never given a serial say so in words, and those
-		// placeholders are not identifiers worth reporting.
-		switch strings.ToLower(s) {
-		case "", "to be filled by o.e.m.", "default string", "none",
-			"not specified", "system serial number", "0123456789":
+		if placeholderSerial(s) {
 			continue
 		}
 		serials = append(serials, s)

@@ -3,7 +3,7 @@
   "code": "en",
 
   "ui": {
-    "title": "glasshouse",
+    "title": "Glasshouse",
     "intro": "What this machine gives away, and what you can do about each thing.",
     "closing": "Nothing here was changed. This tool only reads.",
 
@@ -111,7 +111,7 @@
 
     "system-uuid.present": {
       "title": "SMBIOS system UUID",
-      "reveals": "A unique number written into the board at the factory and readable by any program without administrator rights. It survives reinstalling the operating system, replacing the disk and changing every other component, which makes it one of the most durable ways to recognise this exact machine.",
+      "reveals": "A unique number written into the board at the factory. It survives reinstalling the operating system, replacing the disk and changing every other component, which makes it one of the most durable ways to recognise this exact machine. Note the difference between systems: Windows hands it to any program that asks, with no special rights at all, while Linux keeps it root-only. Linux has the better default here.",
       "fix": "Nothing changes it short of reflashing the firmware with a modified table, which needs the firmware to be replaceable in the first place. Virtual machines are the exception: there you can set whatever UUID you like."
     },
     "system-uuid.absent": {
@@ -121,7 +121,7 @@
     },
     "board-serial.present": {
       "title": "Hardware serial numbers",
-      "reveals": "Serial numbers written at the factory, readable by any program. They tie this machine to a specific unit that was sold on a specific day, which is a link a purchase record can complete.",
+      "reveals": "Serial numbers written at the factory. They tie this machine to a specific unit that was sold on a specific day, which is a link a purchase record can complete. As with the UUID, Windows lets any program read them while Linux keeps them for root.",
       "fix": "Sealed in the firmware tables. As with the UUID, only reflashing changes them, and only where the firmware can be replaced at all."
     },
     "board-serial.absent": {
@@ -162,8 +162,8 @@
     },
     "computer-name.present": {
       "title": "Computer name",
-      "reveals": "Broadcast on every network you join, through DHCP requests, name resolution and file sharing. Windows suggests a name built from your account, so it very often contains a real person's name and travels to every cafe and airport network you use.",
-      "fix": "Rename it to something that is not you. Settings, System, About, Rename this PC. Costs a reboot and nothing else."
+      "reveals": "Broadcast on every network you join, through DHCP requests, name resolution and file sharing. Windows and most Linux installers both suggest a name built from your account, so it very often carries a real person's name, and it travels to every cafe and airport network you use.",
+      "fix": "Rename it to something that is not you. On Windows: Settings, System, About, Rename this PC. On Linux: hostnamectl set-hostname, or edit /etc/hostname. On macOS: Settings, General, About. Costs a reboot and nothing else."
     },
 
     "telemetry-level.off": {
@@ -230,7 +230,7 @@
     "dns-servers.plain": {
       "title": "DNS servers",
       "reveals": "Every site you visit is looked up through these servers. Unless the lookups are encrypted, whoever runs them and anyone on the path sees the name of every host you connect to, which is most of your browsing history in plain text.",
-      "fix": "Turn on encrypted DNS in Settings, Network and internet, and pick a resolver you are willing to trust, because encrypting the lookup moves the trust rather than removing it. Note that TLS still leaks the hostname through SNI unless the site supports Encrypted Client Hello."
+      "fix": "Turn on encrypted DNS and pick a resolver you are willing to trust, because encrypting the lookup moves the trust rather than removing it. On Windows that lives in Settings, Network and internet; on Linux it depends on your resolver, usually systemd-resolved or dnsmasq. Note that TLS still leaks the hostname through SNI unless the site supports Encrypted Client Hello."
     },
     "dns-servers.none": {
       "title": "No DNS servers configured",
@@ -242,6 +242,77 @@
       "title": "A check reported nothing at all",
       "reveals": "One of the checks returned no result, which is a bug in this tool and not a statement about your machine. Whatever it was meant to look at went unexamined.",
       "fix": "Nothing you can do. Please report it, since a check that goes quiet is the failure this tool is built to avoid."
+    },
+
+    "machine-id.present": {
+      "title": "systemd machine ID",
+      "reveals": "A unique value written when the system was installed, and the direct counterpart of the Windows MachineGuid. Unlike the hardware identifiers it is world-readable, so any program you run can use it to recognise this install.",
+      "fix": "It is a plain file. Emptying /etc/machine-id and rebooting makes systemd write a new one, but some software keys state to it, so change it knowing that. On a machine you clone from an image, changing it is not optional: every clone starts identical."
+    },
+    "machine-id.absent": {
+      "title": "No machine ID",
+      "reveals": "Neither systemd nor D-Bus has written an install identifier here.",
+      "fix": "Nothing to do."
+    },
+    "popularity-contest.on": {
+      "title": "Popularity contest is enabled",
+      "reveals": "Sends the list of packages you have installed, and which ones you actually use, to the distribution on a schedule. The data is aggregated, but the list of software on a machine is itself a fingerprint, and an unusual one is close to unique.",
+      "fix": "Set PARTICIPATE=\"no\" in /etc/popularity-contest.conf, or remove the package. Nothing depends on it."
+    },
+    "popularity-contest.off": {
+      "title": "Popularity contest is off",
+      "reveals": "The package survey is installed but set not to participate.",
+      "fix": "Nothing to do."
+    },
+    "popularity-contest.absent": {
+      "title": "No package survey",
+      "reveals": "The popularity contest package is not installed on this system.",
+      "fix": "Nothing to do."
+    },
+    "crash-reporting.on": {
+      "title": "Crash reporting is enabled",
+      "reveals": "When something crashes, a report can be sent off the machine. Crash dumps carry fragments of whatever was in memory at the time, which means fragments of whatever you were doing.",
+      "fix": "Turn it off if you would rather not send them. The cost is that vendors get fewer reports about their own bugs."
+    },
+    "crash-reporting.off": {
+      "title": "Crash reporting is off",
+      "reveals": "Crash reports are not collected or sent.",
+      "fix": "Nothing to do."
+    },
+    "crash-reporting.absent": {
+      "title": "No crash reporter",
+      "reveals": "No crash reporting service is configured on this machine.",
+      "fix": "Nothing to do."
+    },
+    "dns-servers.stub": {
+      "title": "DNS goes through a local resolver",
+      "reveals": "The resolver listed here is on this machine, so something local does the real lookups and this file no longer says who eventually sees them. That could be systemd-resolved, dnsmasq or a VPN client, and whether the lookups are encrypted depends entirely on how that is configured.",
+      "fix": "Check what the local resolver forwards to, and whether it does so over DoT or DoH. A loopback address in resolv.conf is not evidence of anything either way."
+    },
+    "management-engine.applesilicon": {
+      "title": "Apple Silicon, no Management Engine",
+      "reveals": "There is no Intel chipset here and so no Management Engine. The Secure Enclave is a different thing: it holds keys rather than managing the machine, and it has no network stack of its own. Apple's firmware is still closed, and the boot chain is still signed by Apple.",
+      "fix": "Nothing to remove, and nothing to replace it with. Apple Silicon boots what Apple signs."
+    },
+    "boot-guard.apple": {
+      "title": "Apple signed boot",
+      "reveals": "Boot Guard is an Intel mechanism and does not apply. Apple runs its own signed boot chain, which answers the same question the same way: the firmware runs what the vendor signed and nothing else.",
+      "fix": "There is no coreboot path on Apple hardware. The question that matters on other machines does not have a better answer here."
+    },
+    "sip.on": {
+      "title": "System Integrity Protection is on",
+      "reveals": "The system refuses to let even root modify protected parts of the operating system. This is a defence rather than an exposure.",
+      "fix": "Nothing to do. Leave it on."
+    },
+    "sip.off": {
+      "title": "System Integrity Protection is off",
+      "reveals": "Protection is disabled, so anything running as root can alter the operating system itself, including in ways that survive reboots and are hard to notice.",
+      "fix": "Turn it back on from Recovery with csrutil enable, unless you turned it off for a reason you still need."
+    },
+    "sip.unknown": {
+      "title": "System Integrity Protection state unknown",
+      "reveals": "The status could not be read, so nothing can be said about it either way.",
+      "fix": "Running csrutil status by hand will say."
     },
 
     "unsupported-platform.notyet": {

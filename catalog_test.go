@@ -35,8 +35,9 @@ func idsInSource(t *testing.T) []string {
 		}
 		for _, line := range strings.Split(string(src), "\n") {
 			// Only lines that actually build a finding or report a gap.
+			// Lines that build a finding, name one, or report a gap.
 			if !strings.Contains(line, "ID:") && !strings.Contains(line, "ID =") &&
-				!strings.Contains(line, "unreadable(") {
+				!strings.Contains(line, "id = ") && !strings.Contains(line, "unreadable(") {
 				continue
 			}
 			for _, m := range findingID.FindAllStringSubmatch(line, -1) {

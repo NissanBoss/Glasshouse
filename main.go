@@ -1,6 +1,6 @@
 package main
 
-// glasshouse looks at what this machine gives away about you, and sorts
+// Glasshouse looks at what this machine gives away about you, and sorts
 // what it finds by whether you can do anything about it.
 //
 // It reads. It never writes, and it never opens a socket: a tool that asks
@@ -26,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Println("glasshouse " + version)
+		fmt.Println("Glasshouse " + version)
 		return
 	}
 
@@ -66,7 +66,7 @@ func collect() []Result {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, `glasshouse - see what your computer says about you
+	fmt.Fprintln(os.Stderr, `Glasshouse - see what your computer says about you
 
   glasshouse                 look at this machine and report
   glasshouse --lang es       report in another language
