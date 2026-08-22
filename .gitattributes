@@ -1,0 +1,12 @@
+# Keep line endings out of the diffs.
+* text=auto
+
+# gofmt only understands LF. Without this, cloning on Windows checks the
+# files out with CRLF and every single one shows up as unformatted, which
+# then tempts somebody into running gofmt -w and rewriting the whole
+# repository for nothing.
+*.go text eol=lf
+
+# Same reason: the catalogues are compared byte for byte by the tests.
+*.json text eol=lf
+*.sh text eol=lf
