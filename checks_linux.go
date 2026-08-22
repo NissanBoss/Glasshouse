@@ -30,8 +30,9 @@ func platformChecks() []Check {
 		{ID: "machine-id", Group: "identity", Run: checkMachineID},
 		{ID: "computer-name", Group: "identity", Run: checkHostname},
 
-		{ID: "popularity-contest", Group: "telemetry", Run: checkPopularityContest},
-		{ID: "crash-reporting", Group: "telemetry", Run: checkApport},
+		{ID: "package-survey", Group: "telemetry", Run: checkPackageSurvey},
+		{ID: "crash-reporting", Group: "telemetry", Run: checkCrashReporting},
+		{ID: "dnf-countme", Group: "telemetry", Run: checkDnfCountme},
 
 		{ID: "dns-servers", Group: "network", Run: checkResolvConf},
 	}
@@ -260,34 +261,86 @@ func checkHostname() []Finding {
 // and packaged rather than built into the kernel. That difference is worth
 // seeing in the report rather than being told about.
 
-func checkPopularityContest() []Finding {
-	where := at("etc/popularity-contest.conf")
-	b, err := os.ReadFile(where)
-	if err != nil {
-		return []Finding{{ID: "popularity-contest.absent", Fix: Clear, Reach: Local,
-			How: Measured, Source: where}}
+// checkPackageSurvey covers the "tell us what you have installed" schemes,
+// which every distribution names differently and which all send the same
+// thing: the list of software on your machine, which is itself a fingerprint.
+func checkPackageSurvey() []Finding {
+	// Debian and Ubuntu.
+	popcon := at("etc/popularity-contest.conf")
+	if b, err := os.ReadFile(popcon); err == nil {
+		if strings.Contains(string(b), `PARTICIPATE="no"`) {
+			return []Finding{{ID: "popularity-contest.off", Fix: Clear, Reach: Local,
+				How: Measured, Source: popcon}}
+		}
+		return []Finding{{ID: "popularity-contest.on", Fix: Settable, Reach: Network,
+			How: Measured, Source: popcon}}
 	}
-	if strings.Contains(string(b), `PARTICIPATE="no"`) {
-		return []Finding{{ID: "popularity-contest.off", Fix: Clear, Reach: Local,
-			How: Measured, Source: where}}
+
+	// Arch. pkgstats is not installed by default, so finding it means
+	// somebody chose it, but people forget they did.
+	for _, path := range []string{"usr/bin/pkgstats", "usr/lib/systemd/system/pkgstats.timer"} {
+		if _, err := os.Stat(at(path)); err == nil {
+			return []Finding{{ID: "pkgstats.on", Fix: Settable, Reach: Network,
+				How: Measured, Source: at(path)}}
+		}
 	}
-	return []Finding{{ID: "popularity-contest.on", Fix: Settable, Reach: Network,
-		How: Measured, Source: where}}
+
+	return []Finding{{ID: "popularity-contest.absent", Fix: Clear, Reach: Local,
+		How: Measured, Source: popcon}}
 }
 
-func checkApport() []Finding {
-	where := at("etc/default/apport")
-	b, err := os.ReadFile(where)
-	if err != nil {
-		return []Finding{{ID: "crash-reporting.absent", Fix: Clear, Reach: Local,
-			How: Measured, Source: where}}
+// checkCrashReporting covers apport on Debian and Ubuntu and ABRT on
+// Fedora. Both do the same job and both can carry pieces of whatever was in
+// memory when something fell over.
+func checkCrashReporting() []Finding {
+	apport := at("etc/default/apport")
+	if b, err := os.ReadFile(apport); err == nil {
+		if strings.Contains(strings.ReplaceAll(string(b), " ", ""), "enabled=0") {
+			return []Finding{{ID: "crash-reporting.off", Fix: Clear, Reach: Local,
+				How: Measured, Source: apport}}
+		}
+		return []Finding{{ID: "crash-reporting.on", Fix: Settable, Reach: Network,
+			How: Measured, Source: apport}}
 	}
-	if strings.Contains(strings.ReplaceAll(string(b), " ", ""), "enabled=0") {
-		return []Finding{{ID: "crash-reporting.off", Fix: Clear, Reach: Local,
-			How: Measured, Source: where}}
+
+	// Fedora. Autoreporting is what decides whether a crash leaves the
+	// machine by itself or waits for you to press send.
+	abrt := at("etc/abrt/abrt.conf")
+	if b, err := os.ReadFile(abrt); err == nil {
+		if strings.Contains(strings.ReplaceAll(string(b), " ", ""), "AutoreportingEnabled=no") {
+			return []Finding{{ID: "crash-reporting.off", Fix: Clear, Reach: Local,
+				How: Measured, Source: abrt}}
+		}
+		return []Finding{{ID: "crash-reporting.on", Fix: Settable, Reach: Network,
+			How: Measured, Source: abrt}}
 	}
-	return []Finding{{ID: "crash-reporting.on", Fix: Settable, Reach: Network,
-		How: Measured, Source: where}}
+
+	return []Finding{{ID: "crash-reporting.absent", Fix: Clear, Reach: Local,
+		How: Measured, Source: apport}}
+}
+
+// checkDnfCountme reports Fedora's weekly ping. It is easy to miss because
+// it lives in the package manager's configuration rather than anywhere that
+// looks like a privacy setting, and it is on by default.
+func checkDnfCountme() []Finding {
+	var looked []string
+	for _, path := range []string{"etc/dnf/dnf.conf", "etc/yum.conf"} {
+		full := at(path)
+		b, err := os.ReadFile(full)
+		if err != nil {
+			continue
+		}
+		looked = append(looked, full)
+		flat := strings.ReplaceAll(string(b), " ", "")
+		if strings.Contains(flat, "countme=0") || strings.Contains(flat, "countme=False") {
+			return []Finding{{ID: "dnf-countme.off", Fix: Clear, Reach: Local,
+				How: Measured, Source: full}}
+		}
+		return []Finding{{ID: "dnf-countme.on", Fix: Settable, Reach: Network,
+			How: Measured, Source: full}}
+	}
+	return []Finding{{ID: "dnf-countme.absent", Fix: Clear, Reach: Local,
+		How: Measured, Source: at("etc/dnf/dnf.conf")}}
 }
 
 // Network
@@ -318,5 +371,19 @@ func firefoxProfileDirs() []string {
 		// Firefox on it as having none.
 		filepath.Join(home, "snap", "firefox", "common", ".mozilla", "firefox"),
 		filepath.Join(home, ".var", "app", "org.mozilla.firefox", ".mozilla", "firefox"),
+	}
+}
+
+func chromiumBrowsers() []chromiumBrowser {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil
+	}
+	c := filepath.Join(home, ".config")
+	return []chromiumBrowser{
+		{"Chrome", filepath.Join(c, "google-chrome")},
+		{"Chromium", filepath.Join(c, "chromium")},
+		{"Edge", filepath.Join(c, "microsoft-edge")},
+		{"Brave", filepath.Join(c, "BraveSoftware", "Brave-Browser")},
 	}
 }

@@ -335,6 +335,42 @@
       "fix": "Merece la pena volver a ejecutarlo estando en línea, porque esto no dice nada de lo que pasa cuando te conectas."
     },
 
+    "chromium.absent": {
+      "title": "Sin navegador Chromium",
+      "reveals": "Chrome, Edge y Brave no están instalados, o no se han abierto nunca.",
+      "fix": "Nada que hacer."
+    },
+    "chromium.topics-on": {
+      "title": "Chromium te está perfilando para publicidad",
+      "reveals": "El Privacy Sandbox está activado. El propio navegador deduce qué te interesa a partir de las webs que visitas, y se lo entrega a los anunciantes. Esto no es un rastreador que instalara otro: viene de fábrica, y bloquear cookies de terceros no lo toca. Fíjate además en lo que falta aquí: ningún navegador Chromium tiene nada parecido a resistFingerprinting, así que tu tamaño de pantalla, tus fuentes y tu hardware salen hacia todas las webs pase lo que pase con estos ajustes.",
+      "fix": "Configuración, Privacidad y seguridad, Privacidad en los anuncios, y desactiva los temas y la medición. Merece la pena, pero ten claro el límite: impide que el navegador te perfile, y no hace nada contra la huella digital."
+    },
+    "chromium.topics-off": {
+      "title": "El perfilado publicitario de Chromium está apagado",
+      "reveals": "Los temas del Privacy Sandbox están desactivados, así que el navegador no está construyendo un perfil de intereses para dárselo a los anunciantes. Lo que sigue sin tener es ninguna defensa contra la huella digital: ningún navegador Chromium declara un tamaño de pantalla, una lista de fuentes ni una zona horaria fijos, así que las webs te pueden seguir distinguiendo sin guardar nada.",
+      "fix": "Para la mitad de la huella digital no hay nada que ajustar aquí, porque el ajuste no existe. Firefox con resistFingerprinting, o el Tor Browser, son las únicas respuestas de verdad."
+    },
+    "pkgstats.on": {
+      "title": "pkgstats está instalado",
+      "reveals": "pkgstats envía cada cierto tiempo a la distribución la lista de paquetes que tienes instalados. Los datos se agregan, pero el conjunto de software de una máquina es en sí mismo una huella, y uno poco común es casi único.",
+      "fix": "Desinstala el paquete pkgstats, o desactiva su temporizador con systemctl disable pkgstats.timer. No depende nada de él."
+    },
+    "dnf-countme.on": {
+      "title": "DNF está contando esta máquina",
+      "reveals": "Una vez por semana, el gestor de paquetes añade una marca a una de sus peticiones para que las réplicas puedan contar cuántos sistemas hay y aproximadamente qué antigüedad tiene cada instalación. Es deliberadamente burda y no lleva ningún identificador, pero es una señal periódica hacia fuera que tú no activaste, y vive en la configuración del gestor de paquetes en vez de en cualquier sitio con pinta de ajuste de privacidad.",
+      "fix": "Pon countme=0 en /etc/dnf/dnf.conf. No se rompe nada; las réplicas simplemente dejan de contarte."
+    },
+    "dnf-countme.off": {
+      "title": "El recuento de DNF está apagado",
+      "reveals": "La marca semanal está desactivada, así que las actualizaciones de paquetes no la llevan.",
+      "fix": "Nada que hacer."
+    },
+    "dnf-countme.absent": {
+      "title": "Sin DNF",
+      "reveals": "Esta máquina no usa DNF, así que su recuento semanal no aplica aquí.",
+      "fix": "Nada que hacer."
+    },
+
     "check.silent": {
       "title": "Una comprobación no devolvió nada",
       "reveals": "Una de las comprobaciones no devolvió ningún resultado, lo cual es un fallo de esta herramienta y no una afirmación sobre tu máquina. Lo que fuera que tenía que mirar se ha quedado sin mirar.",

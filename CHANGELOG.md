@@ -6,6 +6,29 @@ The release workflow takes the section matching the tag it is publishing and
 uses it as the release text, so what you write here is what the person
 downloading it reads.
 
+## v1.1
+
+**Chrome, Edge and Brave.** The Chromium family gets its own check, because
+it answers a different question from Firefox. It reports whether the Privacy
+Sandbox is profiling you for ads, which is the browser itself doing the
+tracking rather than somebody else's script, and which blocking third-party
+cookies does not touch. It also names what is missing: no Chromium browser
+has anything like resistFingerprinting, so the settings it does have cannot
+help with being unique.
+
+**Fedora and Arch.** DNF quietly adds a weekly marker to one of its requests
+so the mirrors can count installs, it is on by default, and it lives in the
+package manager config rather than anywhere that looks like a privacy
+setting. ABRT covers Fedora crash reporting, pkgstats covers the Arch
+package survey. Leaving countme unset now reports as on, because that is
+what it is.
+
+**macOS is verified rather than hoped for.** The tests now assert that the
+checks came back measured on a Mac, not merely that nothing crashed. A check
+that could not read something returns a well formed gap, and a well formed
+gap passed every test there was, so green never proved the machine had
+actually been read. It does now.
+
 ## v1
 
 First release.

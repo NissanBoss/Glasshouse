@@ -21,6 +21,7 @@ func browserChecks() []Check {
 	return []Check{
 		{ID: "installed-fonts", Group: "browser", Run: checkFonts},
 		{ID: "firefox", Group: "browser", Run: checkFirefox},
+		{ID: "chromium", Group: "browser", Run: checkChromium},
 	}
 }
 

@@ -175,15 +175,16 @@ func TestLinuxResolvConf(t *testing.T) {
 	}
 }
 
-func TestLinuxDistributionTelemetry(t *testing.T) {
+// Debian and Ubuntu.
+func TestLinuxDebianTelemetry(t *testing.T) {
 	fakeMachine(t, map[string]string{
 		"etc/popularity-contest.conf": "PARTICIPATE=\"yes\"\nMAILTO=\"survey@example\"\n",
 		"etc/default/apport":          "enabled=1\n",
 	})
-	if f := only(t, checkPopularityContest()); f.ID != "popularity-contest.on" {
+	if f := only(t, checkPackageSurvey()); f.ID != "popularity-contest.on" {
 		t.Errorf("an opted-in survey came back as %q", f.ID)
 	}
-	if f := only(t, checkApport()); f.ID != "crash-reporting.on" {
+	if f := only(t, checkCrashReporting()); f.ID != "crash-reporting.on" {
 		t.Errorf("enabled crash reporting came back as %q", f.ID)
 	}
 
@@ -191,17 +192,72 @@ func TestLinuxDistributionTelemetry(t *testing.T) {
 		"etc/popularity-contest.conf": "PARTICIPATE=\"no\"\n",
 		"etc/default/apport":          "enabled=0\n",
 	})
-	if f := only(t, checkPopularityContest()); f.ID != "popularity-contest.off" {
+	if f := only(t, checkPackageSurvey()); f.ID != "popularity-contest.off" {
 		t.Errorf("an opted-out survey came back as %q", f.ID)
 	}
-	if f := only(t, checkApport()); f.ID != "crash-reporting.off" {
+	if f := only(t, checkCrashReporting()); f.ID != "crash-reporting.off" {
 		t.Errorf("disabled crash reporting came back as %q", f.ID)
 	}
 
-	// Neither package installed is the common case and must not be an error.
+	// Nothing installed is the common case and must not be an error.
 	fakeMachine(t, map[string]string{"etc/hostname": "x"})
-	if f := only(t, checkPopularityContest()); f.ID != "popularity-contest.absent" {
+	if f := only(t, checkPackageSurvey()); f.ID != "popularity-contest.absent" {
 		t.Errorf("a machine without the survey came back as %q", f.ID)
+	}
+	if f := only(t, checkCrashReporting()); f.ID != "crash-reporting.absent" {
+		t.Errorf("a machine without a crash reporter came back as %q", f.ID)
+	}
+}
+
+// Fedora, where the interesting one hides in the package manager's config
+// rather than anywhere that looks like a privacy setting.
+func TestLinuxFedoraTelemetry(t *testing.T) {
+	fakeMachine(t, map[string]string{
+		"etc/dnf/dnf.conf":   "[main]\ngpgcheck=1\ncountme=1\n",
+		"etc/abrt/abrt.conf": "# Autoreporting\nAutoreportingEnabled = yes\n",
+	})
+	if f := only(t, checkDnfCountme()); f.ID != "dnf-countme.on" {
+		t.Errorf("countme=1 came back as %q", f.ID)
+	}
+	if f := only(t, checkCrashReporting()); f.ID != "crash-reporting.on" {
+		t.Errorf("ABRT autoreporting on came back as %q", f.ID)
+	}
+
+	fakeMachine(t, map[string]string{
+		"etc/dnf/dnf.conf":   "[main]\ncountme=0\n",
+		"etc/abrt/abrt.conf": "AutoreportingEnabled = no\n",
+	})
+	if f := only(t, checkDnfCountme()); f.ID != "dnf-countme.off" {
+		t.Errorf("countme=0 came back as %q", f.ID)
+	}
+	if f := only(t, checkCrashReporting()); f.ID != "crash-reporting.off" {
+		t.Errorf("ABRT autoreporting off came back as %q", f.ID)
+	}
+
+	// Leaving countme out entirely is not the same as turning it off: the
+	// default is on, and the report has to say on.
+	fakeMachine(t, map[string]string{"etc/dnf/dnf.conf": "[main]\ngpgcheck=1\n"})
+	if f := only(t, checkDnfCountme()); f.ID != "dnf-countme.on" {
+		t.Errorf("an unset countme came back as %q, but the default is on", f.ID)
+	}
+
+	fakeMachine(t, map[string]string{"etc/hostname": "x"})
+	if f := only(t, checkDnfCountme()); f.ID != "dnf-countme.absent" {
+		t.Errorf("a machine without DNF came back as %q", f.ID)
+	}
+}
+
+// Arch, which ships nothing by default. Finding pkgstats means somebody
+// chose it, and people forget that they did.
+func TestLinuxArchTelemetry(t *testing.T) {
+	fakeMachine(t, map[string]string{"usr/bin/pkgstats": ""})
+	if f := only(t, checkPackageSurvey()); f.ID != "pkgstats.on" {
+		t.Errorf("pkgstats installed came back as %q", f.ID)
+	}
+
+	fakeMachine(t, map[string]string{"usr/lib/systemd/system/pkgstats.timer": ""})
+	if f := only(t, checkPackageSurvey()); f.ID != "pkgstats.on" {
+		t.Errorf("the pkgstats timer alone came back as %q", f.ID)
 	}
 }
 

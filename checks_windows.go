@@ -431,3 +431,15 @@ func firefoxProfileDirs() []string {
 	}
 	return []string{filepath.Join(appdata, "Mozilla", "Firefox", "Profiles")}
 }
+
+func chromiumBrowsers() []chromiumBrowser {
+	local := os.Getenv("LOCALAPPDATA")
+	if local == "" {
+		return nil
+	}
+	return []chromiumBrowser{
+		{"Chrome", filepath.Join(local, "Google", "Chrome", "User Data")},
+		{"Edge", filepath.Join(local, "Microsoft", "Edge", "User Data")},
+		{"Brave", filepath.Join(local, "BraveSoftware", "Brave-Browser", "User Data")},
+	}
+}

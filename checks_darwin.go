@@ -213,3 +213,16 @@ func firefoxProfileDirs() []string {
 	}
 	return []string{filepath.Join(home, "Library", "Application Support", "Firefox", "Profiles")}
 }
+
+func chromiumBrowsers() []chromiumBrowser {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil
+	}
+	s := filepath.Join(home, "Library", "Application Support")
+	return []chromiumBrowser{
+		{"Chrome", filepath.Join(s, "Google", "Chrome")},
+		{"Edge", filepath.Join(s, "Microsoft Edge")},
+		{"Brave", filepath.Join(s, "BraveSoftware", "Brave-Browser")},
+	}
+}

@@ -239,6 +239,42 @@
       "fix": "Worth running again while online, since this says nothing about what happens when you connect."
     },
 
+    "chromium.absent": {
+      "title": "No Chromium browser",
+      "reveals": "Chrome, Edge and Brave are not installed, or have never been opened.",
+      "fix": "Nothing to do."
+    },
+    "chromium.topics-on": {
+      "title": "Chromium is profiling you for ads",
+      "reveals": "The Privacy Sandbox is on. The browser itself works out what you are interested in from the sites you visit, and hands that to advertisers. This is not a tracker somebody else installed: it is built in, and blocking third-party cookies does not touch it. Note also what is missing here: no Chromium browser has anything like resistFingerprinting, so your screen size, fonts and hardware go out to every site regardless of these settings.",
+      "fix": "Settings, Privacy and security, Ad privacy, and turn off ad topics and ad measurement. Worth doing, but be clear about the limit: it stops the browser profiling you, and does nothing about fingerprinting."
+    },
+    "chromium.topics-off": {
+      "title": "Chromium ad profiling is off",
+      "reveals": "The Privacy Sandbox topics are switched off, so the browser is not building an interest profile to hand to advertisers. What it still does not have is any defence against fingerprinting: no Chromium browser reports a fixed screen size, font list or timezone, so sites can still pick you out without storing anything.",
+      "fix": "For the fingerprinting half there is nothing to set here, because the setting does not exist. Firefox with resistFingerprinting, or the Tor Browser, are the only real answers."
+    },
+    "pkgstats.on": {
+      "title": "pkgstats is installed",
+      "reveals": "pkgstats sends the list of packages you have installed to the distribution on a schedule. The data is aggregated, but the set of software on a machine is itself a fingerprint, and an unusual one is close to unique.",
+      "fix": "Remove the pkgstats package, or disable its timer with systemctl disable pkgstats.timer. Nothing depends on it."
+    },
+    "dnf-countme.on": {
+      "title": "DNF is counting this machine",
+      "reveals": "Every week, the package manager adds a marker to one of its requests so the mirrors can count how many systems are out there and roughly how old each install is. It is deliberately coarse and carries no identifier, but it is a regular outbound signal you did not switch on, and it lives in the package manager's configuration rather than anywhere that looks like a privacy setting.",
+      "fix": "Set countme=0 in /etc/dnf/dnf.conf. Nothing breaks; the mirrors just stop counting you."
+    },
+    "dnf-countme.off": {
+      "title": "DNF counting is off",
+      "reveals": "The weekly marker is disabled, so package updates do not carry it.",
+      "fix": "Nothing to do."
+    },
+    "dnf-countme.absent": {
+      "title": "No DNF",
+      "reveals": "This machine does not use DNF, so its weekly count does not apply here.",
+      "fix": "Nothing to do."
+    },
+
     "check.silent": {
       "title": "A check reported nothing at all",
       "reveals": "One of the checks returned no result, which is a bug in this tool and not a statement about your machine. Whatever it was meant to look at went unexamined.",

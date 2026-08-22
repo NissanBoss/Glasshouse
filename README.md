@@ -120,8 +120,8 @@ than quietly stale.
 |---|---|
 | Firmware and silicon | Management Engine, PSP, Boot Guard, firmware vendor, Secure Boot, SIP, TPM |
 | Identifiers | System UUID, hardware serials, MachineGuid, machine-id, advertising ID, computer name |
-| Telemetry | Telemetry level, upload service, error reporting, activity history, Recall, package survey |
-| Browser | Font set size, and whether Firefox resists fingerprinting |
+| Telemetry | Telemetry level, upload service, error reporting, activity history, Recall, package surveys, DNF counting |
+| Browser | Font set size, whether Firefox resists fingerprinting, and whether Chromium is profiling you for ads |
 | Network | Configured DNS resolvers, and whether a local stub answers them |
 
 Windows, Linux and macOS. Each reads the same ideas from a different place:
