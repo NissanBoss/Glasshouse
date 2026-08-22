@@ -1,0 +1,17 @@
+# Compiled binaries. They get built from source or downloaded from Releases.
+/glasshouse
+/glasshouse.exe
+*.exe
+/dist/
+
+# Editor and system leftovers
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# A saved report is a description of somebody's machine. Keeping one out of
+# the repository by accident is exactly the mistake this tool exists to
+# help people avoid.
+*.report
+*.report.txt

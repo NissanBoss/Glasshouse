@@ -1,0 +1,253 @@
+{
+  "language": "English",
+  "code": "en",
+
+  "ui": {
+    "title": "glasshouse",
+    "intro": "What this machine gives away, and what you can do about each thing.",
+    "closing": "Nothing here was changed. This tool only reads.",
+
+    "group.firmware": "Firmware and silicon",
+    "group.identity": "Identifiers",
+    "group.telemetry": "Telemetry",
+    "group.network": "Network",
+    "group.platform": "Platform",
+
+    "fix.sealed": "Sealed, cannot change",
+    "fix.costly": "Changeable, with cost",
+    "fix.settable": "Just a setting",
+    "fix.clear": "Already fine",
+
+    "fix.short.sealed": "SEALED",
+    "fix.short.costly": "COSTLY",
+    "fix.short.settable": "CHANGE",
+    "fix.short.clear": "OK    ",
+    "fix.short.unknown": "UNSEEN",
+
+    "reach.local": "stays on this machine unless something sends it",
+    "reach.installed": "any program you run can read it",
+    "reach.network": "leaves this machine on its own",
+    "reach.remote": "reachable from outside, even when powered down",
+
+    "label.value": "Value:   ",
+    "label.detail": "Found:   ",
+    "label.reach": "Reach:   ",
+    "label.source": "Read at: ",
+    "label.inferred": "Inferred:",
+    "label.couldnot": "Could not check:",
+    "label.fix": "Fix:",
+
+    "gap.meaning": "This is a gap in the report, not a clean result. Something here was not looked at, and it may or may not be a problem.",
+
+    "summary.title": "SUMMARY",
+    "summary.gaps": "Could not check",
+    "summary.gaps.warning": "Those are gaps, not good news. Anything this tool could not read is a question left open, and a shorter report is not a safer machine.",
+    "summary.gaps.elevate": "This run had no administrator rights, which is the usual reason. Running it elevated will read more, and you should read the source before you agree to that."
+  },
+
+  "checks": {
+    "management-engine.intel": {
+      "title": "Intel Management Engine",
+      "reveals": "Your chipset carries a second processor running its own operating system, with direct access to system memory and its own network stack. It keeps running while the computer is switched off, as long as the board has standby power. On vPro machines it can be reached over the network for remote management, independently of Windows.",
+      "fix": "You cannot remove it. The firmware is signed by Intel and part of it sits in a ROM that cannot be rewritten. The furthest anyone has got is me_cleaner, which strips most modules, and the HAP bit, which halts the engine after boot. Both usually need an external SPI programmer, and both can leave you with a machine that will not start."
+    },
+    "management-engine.amd": {
+      "title": "AMD Platform Security Processor",
+      "reveals": "Your CPU carries an ARM core running its own signed firmware inside TrustZone, with access to system memory. It is AMD's counterpart to Intel's Management Engine, and it is even less documented, which means less is known about what it does.",
+      "fix": "You cannot remove it. Some firmware offers a PSP toggle, but what that toggle actually disables is not documented and has never been independently verified."
+    },
+    "management-engine.unknown": {
+      "title": "Platform coprocessor",
+      "reveals": "The CPU vendor could not be identified, so we cannot say which management coprocessor this board carries. Assume there is one: essentially every x86 machine built since roughly 2008 has one.",
+      "fix": "Nothing to do from software."
+    },
+
+    "boot-guard.likely": {
+      "title": "Intel Boot Guard is probably fused",
+      "reveals": "Boot Guard puts keys in the CPU's own fuses so the firmware will only run if it carries the right signature. It is the single thing that decides whether you can ever replace your firmware, and fuses are permanent: once burned at the factory, no software, no BIOS update and no amount of effort undoes it.",
+      "fix": "If it is fused, coreboot is not an option on this machine and never will be, and the only way past it is different hardware. That is worth knowing before you spend a weekend on it. Confirming it for certain needs a firmware dump or ring 0 access, neither of which this tool will do to you."
+    },
+    "boot-guard.notintel": {
+      "title": "No Intel Boot Guard",
+      "reveals": "Boot Guard is an Intel feature, so it does not apply here. AMD has its own verified boot rooted in the PSP, which is less documented but works on the same principle.",
+      "fix": "Whether this board will run coreboot depends on the model. The coreboot supported hardware list is the place to check."
+    },
+    "boot-guard.unknown": {
+      "title": "Boot Guard state unknown",
+      "reveals": "The CPU could not be identified, so nothing can be said about verified boot on this machine.",
+      "fix": "Nothing to do from here."
+    },
+
+    "firmware-vendor.closed": {
+      "title": "Closed firmware",
+      "reveals": "The firmware that runs before your operating system is a vendor blob you cannot read. It initialises the hardware, it persists across a full disk wipe and reinstall, and it runs with more privilege than the kernel does.",
+      "fix": "coreboot replaces it on a short list of boards, but only where Boot Guard is not fused. See the Boot Guard finding above before going any further."
+    },
+    "secure-boot.on": {
+      "title": "Secure Boot is on",
+      "reveals": "Firmware will refuse to load a bootloader that is not signed by a key it trusts. This is a defence, not an exposure: it makes it much harder for something to install itself below your operating system.",
+      "fix": "Nothing to do. Leave it on unless you are installing your own firmware."
+    },
+    "secure-boot.off": {
+      "title": "Secure Boot is off",
+      "reveals": "Nothing verifies the bootloader before it runs, which leaves the door open to a bootkit that survives reinstalling Windows.",
+      "fix": "Turn it on in your firmware setup. Note that some Linux setups and some older drivers need it off, so check what you would break first."
+    },
+    "secure-boot.unknown": {
+      "title": "Secure Boot state unknown",
+      "reveals": "The state could not be established. That usually means the machine boots in legacy BIOS mode, where Secure Boot does not exist at all.",
+      "fix": "If the board supports UEFI, switching to it and turning Secure Boot on is worth doing, but it may mean reinstalling."
+    },
+    "tpm.present": {
+      "title": "TPM",
+      "reveals": "A security chip holding keys the operating system cannot export. It also holds an endorsement key that is unique to this machine and permanent, and remote attestation can use it to prove which physical computer you are on, even across a clean reinstall.",
+      "fix": "The chip and its key are fixed. You can clear the TPM to drop the keys stored in it, but the endorsement key stays. The useful part is not to give attestation away lightly: it is what lets a service tie an account to this exact machine forever."
+    },
+    "tpm.absent": {
+      "title": "No TPM",
+      "reveals": "No TPM driver is present, so there is no hardware-backed identity for something to attest against.",
+      "fix": "Nothing to do."
+    },
+
+    "system-uuid.present": {
+      "title": "SMBIOS system UUID",
+      "reveals": "A unique number written into the board at the factory and readable by any program without administrator rights. It survives reinstalling the operating system, replacing the disk and changing every other component, which makes it one of the most durable ways to recognise this exact machine.",
+      "fix": "Nothing changes it short of reflashing the firmware with a modified table, which needs the firmware to be replaceable in the first place. Virtual machines are the exception: there you can set whatever UUID you like."
+    },
+    "system-uuid.absent": {
+      "title": "No system UUID",
+      "reveals": "The board reports no UUID, or reports an empty one. Nothing to fingerprint here.",
+      "fix": "Nothing to do."
+    },
+    "board-serial.present": {
+      "title": "Hardware serial numbers",
+      "reveals": "Serial numbers written at the factory, readable by any program. They tie this machine to a specific unit that was sold on a specific day, which is a link a purchase record can complete.",
+      "fix": "Sealed in the firmware tables. As with the UUID, only reflashing changes them, and only where the firmware can be replaced at all."
+    },
+    "board-serial.absent": {
+      "title": "No hardware serials",
+      "reveals": "The firmware tables carry no real serial numbers, only placeholders that the manufacturer never filled in.",
+      "fix": "Nothing to do, and this is the better outcome."
+    },
+
+    "machine-guid.present": {
+      "title": "Windows MachineGuid",
+      "reveals": "A unique value written when Windows was installed and read by a great deal of software as a machine fingerprint. It survives reboots, user changes and hardware swaps, and any program you run can read it without asking for permission.",
+      "fix": "It can be changed in the registry, but plenty of software keys licences and settings to it, so expect things to break. Reinstalling Windows generates a new one, which is the only clean way to change it."
+    },
+    "sqm-machine-id.present": {
+      "title": "Telemetry machine ID",
+      "reveals": "A separate identifier used by the Windows telemetry client to tie the reports coming from this machine together over time.",
+      "fix": "Safe to clear or replace, since nothing licenses against it. It comes back if telemetry is left switched on."
+    },
+    "sqm-machine-id.absent": {
+      "title": "No telemetry machine ID",
+      "reveals": "The telemetry client has not written an identifier for this machine.",
+      "fix": "Nothing to do."
+    },
+    "advertising-id.on": {
+      "title": "Advertising ID is on",
+      "reveals": "A per-user identifier handed to apps so they can profile you across the ones you use and match that profile with what advertisers already know.",
+      "fix": "Settings, Privacy and security, General, turn off the advertising ID. There is no cost to this beyond less targeted ads."
+    },
+    "advertising-id.off": {
+      "title": "Advertising ID is off",
+      "reveals": "Apps cannot ask Windows for a shared identifier to profile you across them.",
+      "fix": "Nothing to do."
+    },
+    "product-id.present": {
+      "title": "Windows Product ID",
+      "reveals": "Identifies this installation of Windows. It is readable by any program and it appears in support and error reports.",
+      "fix": "It comes from your licence and installation. Changing it is not sensible, and it is far less useful for tracking than the MachineGuid above."
+    },
+    "computer-name.present": {
+      "title": "Computer name",
+      "reveals": "Broadcast on every network you join, through DHCP requests, name resolution and file sharing. Windows suggests a name built from your account, so it very often contains a real person's name and travels to every cafe and airport network you use.",
+      "fix": "Rename it to something that is not you. Settings, System, About, Rename this PC. Costs a reboot and nothing else."
+    },
+
+    "telemetry-level.off": {
+      "title": "Telemetry set to off",
+      "reveals": "Policy is set to the lowest level. On Home editions Microsoft treats this as the minimum required level rather than truly none, so some diagnostic data still goes out.",
+      "fix": "This is as low as the setting goes. Blocking the endpoints at the firewall or in DNS is the next step, and it is a step that breaks things."
+    },
+    "telemetry-level.on": {
+      "title": "Telemetry is on",
+      "reveals": "Windows sends diagnostic data about how you use the machine: apps you open, features you touch, crashes, hardware inventory. What exactly goes out at each level is documented by Microsoft and is not fully auditable from here.",
+      "fix": "Group Policy, Computer Configuration, Administrative Templates, Windows Components, Data Collection. Home editions do not have the policy editor, so the registry value is the only lever there."
+    },
+    "telemetry-level.default": {
+      "title": "Telemetry left at its default",
+      "reveals": "No policy is set, so the machine uses whatever level the edition defaults to, which is not the lowest one.",
+      "fix": "Set the AllowTelemetry policy explicitly. Leaving it unset means the default can change under you at the next feature update, and it has before."
+    },
+    "diagtrack.running": {
+      "title": "Connected User Experiences service",
+      "reveals": "The service that collects and uploads telemetry is set to start with Windows. It is the transport underneath the setting above, which is why turning the setting down does not stop the traffic on its own.",
+      "fix": "It can be disabled, and Windows keeps working. Feature updates have been known to re-enable it, so it is worth rechecking after a big update."
+    },
+    "diagtrack.disabled": {
+      "title": "Telemetry service disabled",
+      "reveals": "The upload service is set not to start.",
+      "fix": "Nothing to do. Check again after a feature update."
+    },
+    "diagtrack.absent": {
+      "title": "No telemetry service",
+      "reveals": "The service is not present on this machine at all.",
+      "fix": "Nothing to do."
+    },
+    "error-reporting.on": {
+      "title": "Windows Error Reporting is on",
+      "reveals": "When a program crashes, a report goes to Microsoft. Crash dumps can carry fragments of whatever was in memory at the time, which means fragments of whatever you were doing.",
+      "fix": "It can be turned off with no real cost to you, beyond vendors getting fewer crash reports about their own software."
+    },
+    "error-reporting.off": {
+      "title": "Error reporting is off",
+      "reveals": "Crash reports are not sent.",
+      "fix": "Nothing to do."
+    },
+    "activity-feed.on": {
+      "title": "Activity history",
+      "reveals": "Windows records what you open and what you work on, and can sync that history to your Microsoft account so it follows you to other devices.",
+      "fix": "Settings, Privacy and security, Activity history. Turn off the collection and clear what is already stored, since turning it off does not delete the history."
+    },
+    "activity-feed.off": {
+      "title": "Activity history off",
+      "reveals": "Windows is not building a timeline of what you open.",
+      "fix": "Nothing to do."
+    },
+    "recall.unset": {
+      "title": "Recall is not explicitly disabled",
+      "reveals": "Recall takes periodic screenshots of everything on screen and indexes them so they can be searched later. It stores them locally, but that store is one image of everything you have looked at, including messages, banking and anything a password manager filled in. No policy is set here to stop it.",
+      "fix": "Set the DisableAIDataAnalysis policy so it stays off regardless of what a future update decides the default should be. This matters even on machines that cannot run Recall today, because it costs nothing and settles the question in advance."
+    },
+    "recall.off": {
+      "title": "Recall disabled by policy",
+      "reveals": "Screenshot capture is switched off by policy rather than by a setting, so an update cannot quietly turn it back on.",
+      "fix": "Nothing to do."
+    },
+
+    "dns-servers.plain": {
+      "title": "DNS servers",
+      "reveals": "Every site you visit is looked up through these servers. Unless the lookups are encrypted, whoever runs them and anyone on the path sees the name of every host you connect to, which is most of your browsing history in plain text.",
+      "fix": "Turn on encrypted DNS in Settings, Network and internet, and pick a resolver you are willing to trust, because encrypting the lookup moves the trust rather than removing it. Note that TLS still leaks the hostname through SNI unless the site supports Encrypted Client Hello."
+    },
+    "dns-servers.none": {
+      "title": "No DNS servers configured",
+      "reveals": "No resolver is set on any interface, which usually means nothing is connected right now.",
+      "fix": "Worth running again while online, since this says nothing about what happens when you connect."
+    },
+
+    "check.silent": {
+      "title": "A check reported nothing at all",
+      "reveals": "One of the checks returned no result, which is a bug in this tool and not a statement about your machine. Whatever it was meant to look at went unexamined.",
+      "fix": "Nothing you can do. Please report it, since a check that goes quiet is the failure this tool is built to avoid."
+    },
+
+    "unsupported-platform.notyet": {
+      "title": "This platform is not covered yet",
+      "reveals": "The checks are written for Windows so far. Nothing was inspected on this machine, and an empty report here does not mean a clean one.",
+      "fix": "Linux and macOS checks are the next thing to write."
+    }
+  }
+}

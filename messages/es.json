@@ -1,0 +1,55 @@
+{
+  "language": "Español",
+  "code": "es",
+
+  "ui": {
+    "title": "glasshouse",
+    "intro": "Lo que esta máquina cuenta de ti, y qué se puede hacer con cada cosa.",
+    "closing": "Aquí no se ha cambiado nada. Esta herramienta solo lee.",
+
+    "group.firmware": "Firmware y silicio",
+    "group.identity": "Identificadores",
+    "group.telemetry": "Telemetría",
+    "group.network": "Red",
+    "group.platform": "Plataforma",
+
+    "fix.sealed": "Sellado, no se puede",
+    "fix.costly": "Se puede, pero cuesta",
+    "fix.settable": "Es solo un ajuste",
+    "fix.clear": "Ya está bien",
+
+    "fix.short.sealed": "SELLADO",
+    "fix.short.costly": "CUESTA ",
+    "fix.short.settable": "AJUSTE ",
+    "fix.short.clear": "BIEN  ",
+    "fix.short.unknown": "SIN VER",
+
+    "reach.local": "se queda en esta máquina salvo que algo lo mande",
+    "reach.installed": "cualquier programa que ejecutes puede leerlo",
+    "reach.network": "sale de esta máquina por su cuenta",
+    "reach.remote": "accesible desde fuera, incluso con el equipo apagado",
+
+    "label.source": "Leído en: ",
+    "label.inferred": "Deducido:",
+    "label.couldnot": "No pude comprobar:",
+    "label.value": "Valor: ",
+    "label.detail": "Encontrado: ",
+    "label.reach": "Alcance: ",
+    "label.fix": "Arreglo:",
+
+    "gap.meaning": "Esto es un hueco en el informe, no un resultado limpio. Aquí hay algo que no se ha mirado, y puede ser un problema o no serlo.",
+
+    "summary.title": "RESUMEN",
+    "summary.gaps": "No se pudo comprobar",
+    "summary.gaps.warning": "Eso son huecos, no buenas noticias. Todo lo que esta herramienta no ha podido leer es una pregunta que queda abierta, y un informe más corto no es una máquina más segura.",
+    "summary.gaps.elevate": "Esta ejecución fue sin permisos de administrador, que es la razón habitual. Ejecutarlo elevado lee más cosas, y deberías leer el código antes de aceptar eso."
+  },
+
+  "checks": {
+    "management-engine.intel": {
+      "title": "Intel Management Engine",
+      "reveals": "Tu chipset lleva dentro un segundo procesador que corre su propio sistema operativo, con acceso directo a la memoria del equipo y su propia pila de red. Sigue funcionando con el ordenador apagado, mientras la placa tenga corriente en espera. En equipos vPro se puede llegar a él por red para administrarlo en remoto, al margen de Windows.",
+      "fix": "No se puede quitar. El firmware lo firma Intel y una parte vive en una ROM que no se puede reescribir. Lo más lejos que ha llegado nadie es me_cleaner, que borra casi todos los módulos, y el bit HAP, que lo para después del arranque. Las dos cosas suelen necesitar un programador SPI externo, y las dos pueden dejarte un equipo que no arranca."
+    }
+  }
+}
