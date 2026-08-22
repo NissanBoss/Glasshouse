@@ -3,7 +3,6 @@
 /dist/
 /glasshouse.exe
 *.exe
-/dist/
 
 # Editor and system leftovers
 .vscode/
