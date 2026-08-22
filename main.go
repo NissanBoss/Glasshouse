@@ -50,7 +50,7 @@ func main() {
 
 func collect() []Result {
 	var results []Result
-	for _, c := range platformChecks() {
+	for _, c := range append(platformChecks(), browserChecks()...) {
 		found := c.Run()
 		if len(found) == 0 {
 			// A check that returns nothing is a bug, not a clean machine,

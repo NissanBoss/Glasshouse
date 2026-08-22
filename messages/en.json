@@ -10,6 +10,7 @@
     "group.firmware": "Firmware and silicon",
     "group.identity": "Identifiers",
     "group.telemetry": "Telemetry",
+    "group.browser": "Browser",
     "group.network": "Network",
     "group.platform": "Platform",
 
@@ -313,6 +314,32 @@
       "title": "System Integrity Protection state unknown",
       "reveals": "The status could not be read, so nothing can be said about it either way.",
       "fix": "Running csrutil status by hand will say."
+    },
+
+    "installed-fonts.stock": {
+      "title": "Font set looks ordinary",
+      "reveals": "The list of fonts you have installed is one of the strongest signals in browser fingerprinting, and one almost nobody thinks about. A site can test for them one at a time and build a list. Yours is close enough to a stock install that it does not single you out on its own.",
+      "fix": "Nothing to do, and it is worth keeping that way: installing large font packs is one of the easiest ways to make yourself identifiable without noticing."
+    },
+    "installed-fonts.many": {
+      "title": "Unusually large font set",
+      "reveals": "A site can test which fonts you have, one at a time, and a set this size is very unlikely to match anyone else's. This is not a setting you turned on: it is the trail left by design tools, office suites and language packs, and it works as an identifier whether you like it or not.",
+      "fix": "Removing fonts you do not use shrinks the signal, but only Firefox with resistFingerprinting actually stops the question being answered, by reporting a fixed list to every site. That is the real fix, and it is in the finding below."
+    },
+    "firefox.absent": {
+      "title": "No Firefox profile",
+      "reveals": "Firefox is not installed, or has never been opened. It is worth naming because it is the only mainstream browser with a switch that actually addresses fingerprinting.",
+      "fix": "Nothing to do. If fingerprinting is what worries you, Firefox with resistFingerprinting, or the Tor Browser, are the only things that meaningfully help."
+    },
+    "firefox.resist-on": {
+      "title": "Firefox is resisting fingerprinting",
+      "reveals": "resistFingerprinting is on, so Firefox reports a fixed screen size, timezone, font list and hardware profile to every site. You stop looking like yourself and start looking like every other person running the same setting, which is the only defence that works.",
+      "fix": "Nothing to do. Be aware it is why some sites render oddly and why your clock may look wrong to them: that is the setting working, not breaking."
+    },
+    "firefox.resist-off": {
+      "title": "Firefox is not resisting fingerprinting",
+      "reveals": "Firefox is reporting your real screen size, timezone, fonts and hardware to every site you visit. Together those are usually enough to pick one browser out of millions without storing anything on your machine, so clearing cookies does not touch it.",
+      "fix": "Set privacy.resistFingerprinting to true in about:config, or use the Tor Browser, which ships with it on. Expect some sites to look wrong and your timezone to read as UTC. That is the cost, and it is the whole point: you are trading looking right for looking like everybody else."
     },
 
     "unsupported-platform.notyet": {

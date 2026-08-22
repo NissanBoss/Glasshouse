@@ -11,6 +11,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -290,3 +291,32 @@ func checkApport() []Finding {
 }
 
 // Network
+
+// Where the browser-facing things live on Linux. The system directories go
+// through the configurable root so tests can supply their own; the ones
+// under a home directory do not, since there is only ever one of those.
+
+func fontDirs() []string {
+	dirs := []string{at("usr/share/fonts"), at("usr/local/share/fonts")}
+	if home, err := os.UserHomeDir(); err == nil {
+		dirs = append(dirs,
+			filepath.Join(home, ".local", "share", "fonts"),
+			filepath.Join(home, ".fonts"))
+	}
+	return dirs
+}
+
+func firefoxProfileDirs() []string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil
+	}
+	return []string{
+		filepath.Join(home, ".mozilla", "firefox"),
+		// Snap and Flatpak put the profile somewhere else entirely, and a
+		// tool that only knows the classic path reports a machine with
+		// Firefox on it as having none.
+		filepath.Join(home, "snap", "firefox", "common", ".mozilla", "firefox"),
+		filepath.Join(home, ".var", "app", "org.mozilla.firefox", ".mozilla", "firefox"),
+	}
+}

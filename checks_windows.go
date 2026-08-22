@@ -15,6 +15,8 @@ package main
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -410,4 +412,22 @@ func checkDNSServers() []Finding {
 	}
 	return []Finding{{ID: "dns-servers.plain", Fix: Settable, Reach: Network,
 		How: Measured, Source: base, Detail: strings.Join(servers, ", ")}}
+}
+
+// Where the browser-facing things live on Windows.
+
+func fontDirs() []string {
+	dirs := []string{filepath.Join(os.Getenv("SystemRoot"), "Fonts")}
+	if local := os.Getenv("LOCALAPPDATA"); local != "" {
+		dirs = append(dirs, filepath.Join(local, "Microsoft", "Windows", "Fonts"))
+	}
+	return dirs
+}
+
+func firefoxProfileDirs() []string {
+	appdata := os.Getenv("APPDATA")
+	if appdata == "" {
+		return nil
+	}
+	return []string{filepath.Join(appdata, "Mozilla", "Firefox", "Profiles")}
 }

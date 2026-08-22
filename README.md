@@ -1,4 +1,3 @@
-| Network | Configured DNS resolvers, and whether a local stub answers them |
 # Glasshouse
 
 See what your computer says about you, and which parts of it you can
@@ -108,17 +107,22 @@ is written in Go anywhere else, so a new language is one new file and no
 code at all.
 
 Copy `messages/en.json`, translate what you can, and leave out what you
-cannot: missing entries fall back to English rather than showing blanks,
-so a half-finished translation is useful on the day you start it.
+cannot: missing entries fall back to English rather than showing blanks, so
+a half-finished translation is useful on the day you start it.
+
+English and Spanish ship complete. A test prints how much of each language
+is covered, so a translation falling behind the checks is visible rather
+than quietly stale.
 
 ## What it looks at
 
 | Group | Examples |
 |---|---|
-| Firmware and silicon | Management Engine, PSP, firmware vendor, Secure Boot, TPM |
-| Identifiers | MachineGuid, telemetry machine ID, advertising ID, computer name |
-| Telemetry | Telemetry level, upload service, error reporting, activity history, Recall |
-| Network | Configured DNS resolvers |
+| Firmware and silicon | Management Engine, PSP, Boot Guard, firmware vendor, Secure Boot, SIP, TPM |
+| Identifiers | System UUID, hardware serials, MachineGuid, machine-id, advertising ID, computer name |
+| Telemetry | Telemetry level, upload service, error reporting, activity history, Recall, package survey |
+| Browser | Font set size, and whether Firefox resists fingerprinting |
+| Network | Configured DNS resolvers, and whether a local stub answers them |
 
 Windows, Linux and macOS. Each reads the same ideas from a different place:
 the registry and SMBIOS on Windows, /sys and /proc on Linux, the IORegistry

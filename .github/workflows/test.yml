@@ -1,0 +1,43 @@
+name: Test
+
+# Runs on all three systems, which is the only way this project gets honest
+# coverage: the checks are platform-specific by nature, and whoever writes
+# them owns exactly one machine.
+#
+# macOS matters most here. Its checks cannot be run anywhere else, so
+# without this job they would be shipped on hope.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Formatting
+        shell: bash
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Tests
+        run: go test -v ./...
+
+      # A privacy tool that cannot be read is worth nothing, and a report
+      # nobody can see is worth less. Running it proves both still work.
+      - name: Run it for real
+        run: go run . --lang en

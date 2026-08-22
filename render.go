@@ -19,7 +19,7 @@ import (
 	"strings"
 )
 
-var groupOrder = []string{"telemetry", "identity", "network", "firmware", "platform"}
+var groupOrder = []string{"telemetry", "identity", "browser", "network", "firmware", "platform"}
 
 // fixOrder puts the actionable first and the immovable last.
 var fixOrder = []Fixability{Settable, Costly, Sealed, Clear}

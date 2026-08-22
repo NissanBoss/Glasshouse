@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -34,13 +33,20 @@ func idsInSource(t *testing.T) []string {
 			t.Fatal(err)
 		}
 		for _, line := range strings.Split(string(src), "\n") {
-			// Only lines that actually build a finding or report a gap.
-			// Lines that build a finding, name one, or report a gap.
-			if !strings.Contains(line, "ID:") && !strings.Contains(line, "ID =") &&
-				!strings.Contains(line, "id = ") && !strings.Contains(line, "unreadable(") {
+			// Take every literal of the right shape, and skip only the
+			// lines that look up an interface string, which share it.
+			//
+			// This started out the other way round, listing the ways a
+			// finding gets its ID, and missed a new one three times: ID:,
+			// then ID =, then id := and id, fix =. Listing the one thing
+			// to leave out is the only version that stays correct.
+			if strings.Contains(line, ".ui(") {
 				continue
 			}
 			for _, m := range findingID.FindAllStringSubmatch(line, -1) {
+				if looksLikeAFilename(m[1]) {
+					continue
+				}
 				seen[m[1]] = true
 			}
 		}
@@ -123,21 +129,74 @@ func TestEveryLanguageLoads(t *testing.T) {
 
 // A half-finished translation has to stay useful: missing entries fall back
 // to English rather than leaving a blank where an explanation should be.
+//
+// Tested against a catalogue built right here rather than against a real
+// language file, so it keeps testing the fallback even now that Spanish is
+// complete and has nothing left to fall back from.
 func TestPartialTranslationFallsBack(t *testing.T) {
-	if _, err := os.Stat(filepath.Join("messages", "es.json")); err != nil {
-		t.Skip("no Spanish catalogue to test against")
+	if _, err := loadCatalog("en"); err != nil {
+		t.Fatal(err)
 	}
-	es, err := loadCatalog("es")
+	half := Catalog{Code: "xx", Checks: map[string]CheckText{
+		"recall.off": {Title: "Traducido"},
+	}}
+
+	// Half an entry: the title is translated, the rest is not.
+	done := half.check("recall.off")
+	if done.Title != "Traducido" {
+		t.Errorf("the translated title came back as %q", done.Title)
+	}
+	if done.Reveals != english.Checks["recall.off"].Reveals || done.Reveals == "" {
+		t.Error("a half-translated entry did not fill its gaps from English")
+	}
+
+	// No entry at all.
+	missing := half.check("tpm.present")
+	if missing.Title != english.Checks["tpm.present"].Title {
+		t.Errorf("an untranslated entry came back as %q instead of falling back", missing.Title)
+	}
+	if missing.Reveals == "" {
+		t.Error("an untranslated explanation came back blank, which is the worst outcome")
+	}
+}
+
+// How complete each translation is. Not a failure, because a partial one is
+// useful from the day it starts, but worth seeing when checks get added
+// faster than they get translated.
+func TestTranslationCoverage(t *testing.T) {
+	en, err := loadCatalog("en")
 	if err != nil {
 		t.Fatal(err)
 	}
-	// tpm.present is deliberately untranslated, so it should come back in
-	// English rather than empty.
-	text := es.check("tpm.present")
-	if text.Title == "" || strings.HasPrefix(text.Title, "[[") {
-		t.Errorf("untranslated entry came back as %q instead of falling back", text.Title)
+	for _, code := range availableLanguages() {
+		if code == "en" {
+			continue
+		}
+		cat, err := loadCatalog(code)
+		if err != nil {
+			t.Errorf("%s: %v", code, err)
+			continue
+		}
+		have := 0
+		for id := range en.Checks {
+			if _, ok := cat.Checks[id]; ok {
+				have++
+			}
+		}
+		t.Logf("%s covers %d of %d findings", code, have, len(en.Checks))
 	}
-	if text.Reveals == "" {
-		t.Error("untranslated explanation came back blank, which is the worst outcome")
-	}
+}
+
+// Filenames have exactly the same shape as a finding ID, and there is no
+// clever way to tell "prefs.js" from "tpm.present" by looking at it. So the
+// extensions get named.
+var fileExtensions = map[string]bool{
+	"dll": true, "js": true, "json": true, "exe": true, "go": true,
+	"conf": true, "so": true, "sh": true, "txt": true, "md": true,
+	"yml": true, "yaml": true, "log": true, "cfg": true,
+}
+
+func looksLikeAFilename(id string) bool {
+	dot := strings.LastIndex(id, ".")
+	return dot >= 0 && fileExtensions[id[dot+1:]]
 }

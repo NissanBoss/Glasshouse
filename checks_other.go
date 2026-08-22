@@ -16,3 +16,6 @@ func platformChecks() []Check {
 		}},
 	}
 }
+
+func fontDirs() []string           { return nil }
+func firefoxProfileDirs() []string { return nil }

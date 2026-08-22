@@ -1,5 +1,6 @@
 # Compiled binaries. They get built from source or downloaded from Releases.
 /glasshouse
+/dist/
 /glasshouse.exe
 *.exe
 /dist/

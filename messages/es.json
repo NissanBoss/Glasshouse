@@ -10,6 +10,7 @@
     "group.firmware": "Firmware y silicio",
     "group.identity": "Identificadores",
     "group.telemetry": "Telemetría",
+    "group.browser": "Navegador",
     "group.network": "Red",
     "group.platform": "Plataforma",
 
@@ -21,7 +22,7 @@
     "fix.short.sealed": "SELLADO",
     "fix.short.costly": "CUESTA ",
     "fix.short.settable": "AJUSTE ",
-    "fix.short.clear": "BIEN  ",
+    "fix.short.clear": "BIEN   ",
     "fix.short.unknown": "SIN VER",
 
     "reach.local": "se queda en esta máquina salvo que algo lo mande",
@@ -29,20 +30,20 @@
     "reach.network": "sale de esta máquina por su cuenta",
     "reach.remote": "accesible desde fuera, incluso con el equipo apagado",
 
-    "label.source": "Leído en: ",
-    "label.inferred": "Deducido:",
+    "label.value": "Valor:     ",
+    "label.detail": "Encontrado:",
+    "label.reach": "Alcance:   ",
+    "label.source": "Leído en:  ",
+    "label.inferred": "Deducido:  ",
     "label.couldnot": "No pude comprobar:",
-    "label.value": "Valor: ",
-    "label.detail": "Encontrado: ",
-    "label.reach": "Alcance: ",
     "label.fix": "Arreglo:",
 
-    "gap.meaning": "Esto es un hueco en el informe, no un resultado limpio. Aquí hay algo que no se ha mirado, y puede ser un problema o no serlo.",
+    "gap.meaning": "Esto es un hueco en el informe, no un resultado limpio. Aquí hay algo que no se ha mirado, y puede ser un problema o puede no serlo.",
 
     "summary.title": "RESUMEN",
     "summary.gaps": "No se pudo comprobar",
     "summary.gaps.warning": "Eso son huecos, no buenas noticias. Todo lo que esta herramienta no ha podido leer es una pregunta que queda abierta, y un informe más corto no es una máquina más segura.",
-    "summary.gaps.elevate": "Esta ejecución fue sin permisos de administrador, que es la razón habitual. Ejecutarlo elevado lee más cosas, y deberías leer el código antes de aceptar eso."
+    "summary.gaps.elevate": "Esta vez se ejecutó sin permisos de administrador, que es la razón habitual. Elevado lee más cosas, y deberías leer el código antes de aceptar eso."
   },
 
   "checks": {
@@ -50,6 +51,299 @@
       "title": "Intel Management Engine",
       "reveals": "Tu chipset lleva dentro un segundo procesador que corre su propio sistema operativo, con acceso directo a la memoria del equipo y su propia pila de red. Sigue funcionando con el ordenador apagado, mientras la placa tenga corriente en espera. En equipos vPro se puede llegar a él por red para administrarlo en remoto, al margen de Windows.",
       "fix": "No se puede quitar. El firmware lo firma Intel y una parte vive en una ROM que no se puede reescribir. Lo más lejos que ha llegado nadie es me_cleaner, que borra casi todos los módulos, y el bit HAP, que lo para después del arranque. Las dos cosas suelen necesitar un programador SPI externo, y las dos pueden dejarte un equipo que no arranca."
+    },
+    "management-engine.amd": {
+      "title": "AMD Platform Security Processor",
+      "reveals": "Tu CPU lleva un núcleo ARM corriendo su propio firmware firmado dentro de TrustZone, con acceso a la memoria del equipo. Es el equivalente de AMD al Management Engine de Intel, y está aún menos documentado, lo que significa que se sabe menos de lo que hace.",
+      "fix": "No se puede quitar. Algunos firmwares ofrecen una opción para desactivar el PSP, pero no está documentado qué desactiva de verdad y nadie lo ha verificado por su cuenta."
+    },
+    "management-engine.applesilicon": {
+      "title": "Apple Silicon, sin Management Engine",
+      "reveals": "Aquí no hay chipset de Intel y por tanto no hay Management Engine. El Secure Enclave es otra cosa: guarda claves en vez de administrar la máquina, y no tiene pila de red propia. El firmware de Apple sigue siendo cerrado, y la cadena de arranque la sigue firmando Apple.",
+      "fix": "No hay nada que quitar, ni nada con lo que sustituirlo. Apple Silicon arranca lo que Apple firma."
+    },
+    "management-engine.unknown": {
+      "title": "Coprocesador de plataforma",
+      "reveals": "No se pudo identificar el fabricante de la CPU, así que no se puede decir qué coprocesador de administración lleva esta placa. Da por hecho que hay uno: prácticamente todo x86 fabricado desde 2008 lo tiene.",
+      "fix": "Nada que hacer desde software."
+    },
+
+    "boot-guard.likely": {
+      "title": "Intel Boot Guard probablemente fusionado",
+      "reveals": "Boot Guard mete claves en los fusibles de la propia CPU para que el firmware solo arranque si lleva la firma correcta. Es lo único que decide si algún día podrás sustituir tu firmware, y los fusibles son permanentes: una vez quemados en fábrica, no lo deshace ningún software, ninguna actualización de BIOS ni ninguna cantidad de esfuerzo.",
+      "fix": "Si está fusionado, coreboot no es una opción en esta máquina y nunca lo será, y la única salida es otro hardware. Merece la pena saberlo antes de gastar un fin de semana. Confirmarlo con certeza necesita volcar el firmware o acceso en anillo 0, y esta herramienta no te va a hacer ninguna de las dos cosas."
+    },
+    "boot-guard.notintel": {
+      "title": "Sin Intel Boot Guard",
+      "reveals": "Boot Guard es una función de Intel, así que aquí no aplica. AMD tiene su propio arranque verificado con raíz en el PSP, menos documentado pero con el mismo principio.",
+      "fix": "Que esta placa admita coreboot depende del modelo. La lista de hardware soportado de coreboot es el sitio donde mirarlo."
+    },
+    "boot-guard.apple": {
+      "title": "Arranque firmado por Apple",
+      "reveals": "Boot Guard es un mecanismo de Intel y aquí no aplica. Apple tiene su propia cadena de arranque firmada, que responde a la misma pregunta de la misma manera: el firmware ejecuta lo que el fabricante firmó y nada más.",
+      "fix": "No hay camino a coreboot en hardware de Apple. La pregunta que importa en otras máquinas no tiene aquí una respuesta mejor."
+    },
+    "boot-guard.unknown": {
+      "title": "Estado de Boot Guard desconocido",
+      "reveals": "No se pudo identificar la CPU, así que no se puede decir nada sobre el arranque verificado de esta máquina.",
+      "fix": "Nada que hacer desde aquí."
+    },
+
+    "firmware-vendor.closed": {
+      "title": "Firmware cerrado",
+      "reveals": "El firmware que corre antes que tu sistema operativo es un binario del fabricante que no puedes leer. Inicializa el hardware, sobrevive a formatear el disco entero y reinstalar, y corre con más privilegio que el propio núcleo.",
+      "fix": "coreboot lo sustituye en una lista corta de placas, pero solo donde Boot Guard no esté fusionado. Mira el hallazgo de Boot Guard antes de seguir por ahí."
+    },
+    "secure-boot.on": {
+      "title": "Arranque seguro activado",
+      "reveals": "El firmware se niega a cargar un gestor de arranque que no esté firmado con una clave en la que confía. Esto es una defensa, no una exposición: hace mucho más difícil que algo se instale por debajo de tu sistema operativo.",
+      "fix": "Nada que hacer. Déjalo activado salvo que vayas a instalar tu propio firmware."
+    },
+    "secure-boot.off": {
+      "title": "Arranque seguro desactivado",
+      "reveals": "Nada verifica el gestor de arranque antes de ejecutarlo, lo que deja la puerta abierta a un bootkit que sobreviva a reinstalar el sistema.",
+      "fix": "Actívalo en la configuración del firmware. Ojo: algunas instalaciones de Linux y algunos controladores antiguos lo necesitan desactivado, así que mira antes qué romperías."
+    },
+    "secure-boot.unknown": {
+      "title": "Estado del arranque seguro desconocido",
+      "reveals": "No se pudo determinar el estado. Normalmente significa que la máquina arranca en modo BIOS antiguo, donde el arranque seguro no existe.",
+      "fix": "Si la placa admite UEFI, pasarse y activar el arranque seguro merece la pena, aunque puede implicar reinstalar."
+    },
+    "sip.on": {
+      "title": "System Integrity Protection activado",
+      "reveals": "El sistema no deja que ni siquiera root modifique las partes protegidas del sistema operativo. Esto es una defensa, no una exposición.",
+      "fix": "Nada que hacer. Déjalo activado."
+    },
+    "sip.off": {
+      "title": "System Integrity Protection desactivado",
+      "reveals": "La protección está apagada, así que cualquier cosa que corra como root puede alterar el propio sistema operativo, incluso de formas que sobreviven al reinicio y son difíciles de notar.",
+      "fix": "Vuelve a activarlo desde Recovery con csrutil enable, salvo que lo apagaras por un motivo que todavía necesites."
+    },
+    "sip.unknown": {
+      "title": "Estado de System Integrity Protection desconocido",
+      "reveals": "No se pudo leer el estado, así que no se puede decir nada en un sentido ni en otro.",
+      "fix": "Ejecutar csrutil status a mano te lo dirá."
+    },
+    "tpm.present": {
+      "title": "TPM",
+      "reveals": "Un chip de seguridad que guarda claves que el sistema operativo no puede exportar. También guarda una clave de aval única para esta máquina y permanente, y la atestación remota puede usarla para demostrar en qué ordenador físico estás, incluso después de reinstalar de cero.",
+      "fix": "El chip y su clave son fijos. Puedes borrar el TPM para tirar las claves guardadas, pero la clave de aval se queda. Lo útil es no conceder atestación a la ligera: es lo que permite a un servicio atar una cuenta a esta máquina exacta para siempre."
+    },
+    "tpm.absent": {
+      "title": "Sin TPM",
+      "reveals": "No hay controlador de TPM, así que no hay identidad respaldada por hardware contra la que atestar.",
+      "fix": "Nada que hacer."
+    },
+
+    "system-uuid.present": {
+      "title": "UUID de sistema (SMBIOS)",
+      "reveals": "Un número único grabado en la placa en fábrica. Sobrevive a reinstalar el sistema operativo, cambiar el disco y sustituir cualquier otro componente, lo que lo convierte en una de las formas más duraderas de reconocer esta máquina concreta. Ojo a la diferencia entre sistemas: Windows se lo entrega a cualquier programa que lo pida, sin permisos especiales, mientras que Linux lo reserva para root. Aquí Linux tiene el mejor comportamiento.",
+      "fix": "No lo cambia nada salvo reescribir el firmware con una tabla modificada, y eso requiere que el firmware se pueda sustituir. Las máquinas virtuales son la excepción: ahí puedes poner el UUID que quieras."
+    },
+    "system-uuid.absent": {
+      "title": "Sin UUID de sistema",
+      "reveals": "La placa no declara UUID, o declara uno vacío. Aquí no hay nada con lo que hacer huella.",
+      "fix": "Nada que hacer."
+    },
+    "board-serial.present": {
+      "title": "Números de serie del hardware",
+      "reveals": "Números de serie escritos en fábrica. Atan esta máquina a una unidad concreta que se vendió un día concreto, y ese vínculo lo completa cualquier registro de compra. Igual que con el UUID, Windows deja que los lea cualquier programa mientras que Linux los reserva para root.",
+      "fix": "Sellados en las tablas del firmware. Como con el UUID, solo cambian reescribiendo el firmware, y solo donde el firmware se pueda sustituir."
+    },
+    "board-serial.absent": {
+      "title": "Sin números de serie",
+      "reveals": "Las tablas del firmware no llevan números de serie de verdad, solo los textos de relleno que el fabricante nunca rellenó.",
+      "fix": "Nada que hacer, y este es el mejor resultado posible."
+    },
+
+    "machine-guid.present": {
+      "title": "MachineGuid de Windows",
+      "reveals": "Un valor único que se escribe al instalar Windows y que muchísimo software lee como huella de la máquina. Sobrevive a reinicios, a cambiar de usuario y a cambiar componentes, y cualquier programa que ejecutes puede leerlo sin pedir permiso.",
+      "fix": "Se puede cambiar en el registro, pero mucho software ata licencias y ajustes a él, así que cuenta con que se rompan cosas. Reinstalar Windows genera uno nuevo, y esa es la única forma limpia de cambiarlo."
+    },
+    "machine-id.present": {
+      "title": "machine-id de systemd",
+      "reveals": "Un valor único escrito al instalar el sistema, y el equivalente directo del MachineGuid de Windows. A diferencia de los identificadores de hardware, este lo puede leer cualquiera, así que cualquier programa que ejecutes puede usarlo para reconocer esta instalación.",
+      "fix": "Es un archivo normal. Vaciar /etc/machine-id y reiniciar hace que systemd escriba uno nuevo, pero hay software que ata estado a él, así que cámbialo sabiéndolo. En una máquina clonada de una imagen, cambiarlo no es opcional: todos los clones empiezan idénticos."
+    },
+    "machine-id.absent": {
+      "title": "Sin machine-id",
+      "reveals": "Ni systemd ni D-Bus han escrito aquí un identificador de instalación.",
+      "fix": "Nada que hacer."
+    },
+    "sqm-machine-id.present": {
+      "title": "Identificador de telemetría",
+      "reveals": "Un identificador aparte que usa el cliente de telemetría de Windows para hilar entre sí los informes que salen de esta máquina a lo largo del tiempo.",
+      "fix": "Se puede borrar o cambiar sin riesgo, porque no hay nada que licencie contra él. Vuelve a aparecer si dejas la telemetría encendida."
+    },
+    "sqm-machine-id.absent": {
+      "title": "Sin identificador de telemetría",
+      "reveals": "El cliente de telemetría no ha escrito un identificador para esta máquina.",
+      "fix": "Nada que hacer."
+    },
+    "advertising-id.on": {
+      "title": "Identificador de publicidad activado",
+      "reveals": "Un identificador por usuario que se entrega a las aplicaciones para que puedan perfilarte entre unas y otras, y cruzar ese perfil con lo que los anunciantes ya saben.",
+      "fix": "Configuración, Privacidad y seguridad, General, desactiva el identificador de publicidad. No cuesta nada más allá de anuncios menos dirigidos."
+    },
+    "advertising-id.off": {
+      "title": "Identificador de publicidad desactivado",
+      "reveals": "Las aplicaciones no pueden pedirle a Windows un identificador compartido para perfilarte entre ellas.",
+      "fix": "Nada que hacer."
+    },
+    "product-id.present": {
+      "title": "Product ID de Windows",
+      "reveals": "Identifica esta instalación de Windows. Lo puede leer cualquier programa y aparece en los informes de soporte y de error.",
+      "fix": "Viene de tu licencia y tu instalación. Cambiarlo no tiene sentido, y para rastrear sirve mucho menos que el MachineGuid de arriba."
+    },
+    "computer-name.present": {
+      "title": "Nombre del equipo",
+      "reveals": "Se difunde en cada red a la que te conectas, por peticiones DHCP, resolución de nombres y compartición de archivos. Tanto Windows como la mayoría de instaladores de Linux proponen un nombre construido a partir de tu cuenta, así que muy a menudo lleva dentro el nombre de una persona real, y viaja a todas las redes de cafeterías y aeropuertos que uses.",
+      "fix": "Renómbralo a algo que no seas tú. En Windows: Configuración, Sistema, Acerca de, Cambiar el nombre de este equipo. En Linux: hostnamectl set-hostname, o edita /etc/hostname. En macOS: Configuración, General, Información. Cuesta un reinicio y nada más."
+    },
+
+    "telemetry-level.off": {
+      "title": "Telemetría al mínimo",
+      "reveals": "La política está en el nivel más bajo. En las ediciones Home, Microsoft trata esto como el mínimo obligatorio y no como nada en absoluto, así que sigue saliendo algún dato de diagnóstico.",
+      "fix": "Este es el mínimo al que llega el ajuste. El siguiente paso es bloquear los destinos en el cortafuegos o en el DNS, y ese paso rompe cosas."
+    },
+    "telemetry-level.on": {
+      "title": "Telemetría activada",
+      "reveals": "Windows envía datos de diagnóstico sobre cómo usas la máquina: aplicaciones que abres, funciones que tocas, cuelgues, inventario de hardware. Qué sale exactamente en cada nivel lo documenta Microsoft y no se puede auditar del todo desde aquí.",
+      "fix": "Directivas de grupo, Configuración del equipo, Plantillas administrativas, Componentes de Windows, Recopilación de datos. Las ediciones Home no traen el editor de directivas, así que allí el valor del registro es la única palanca."
+    },
+    "telemetry-level.default": {
+      "title": "Telemetría en su valor por defecto",
+      "reveals": "No hay ninguna política puesta, así que la máquina usa el nivel que traiga por defecto su edición, que no es el más bajo.",
+      "fix": "Fija la política AllowTelemetry de forma explícita. Dejarla sin poner significa que el valor por defecto puede cambiar por debajo en la siguiente actualización grande, y ya ha pasado antes."
+    },
+    "diagtrack.running": {
+      "title": "Servicio de experiencias del usuario conectado",
+      "reveals": "El servicio que recoge y sube la telemetría está puesto para arrancar con Windows. Es el transporte que hay debajo del ajuste de arriba, y por eso bajar el ajuste no corta el tráfico por sí solo.",
+      "fix": "Se puede desactivar y Windows sigue funcionando. Se sabe de actualizaciones grandes que lo han vuelto a activar, así que conviene revisarlo después de una."
+    },
+    "diagtrack.disabled": {
+      "title": "Servicio de telemetría desactivado",
+      "reveals": "El servicio de subida está puesto para no arrancar.",
+      "fix": "Nada que hacer. Vuelve a mirarlo después de una actualización grande."
+    },
+    "diagtrack.absent": {
+      "title": "Sin servicio de telemetría",
+      "reveals": "El servicio no está presente en esta máquina.",
+      "fix": "Nada que hacer."
+    },
+    "error-reporting.on": {
+      "title": "Informe de errores de Windows activado",
+      "reveals": "Cuando un programa se cuelga, sale un informe hacia Microsoft. Los volcados pueden llevar trozos de lo que hubiera en memoria en ese momento, o sea trozos de lo que estuvieras haciendo.",
+      "fix": "Se puede apagar sin coste real para ti, más allá de que los fabricantes reciban menos informes de sus propios fallos."
+    },
+    "error-reporting.off": {
+      "title": "Informe de errores desactivado",
+      "reveals": "Los informes de cuelgue no se envían.",
+      "fix": "Nada que hacer."
+    },
+    "activity-feed.on": {
+      "title": "Historial de actividad",
+      "reveals": "Windows apunta lo que abres y en lo que trabajas, y puede sincronizar ese historial con tu cuenta de Microsoft para que te siga a otros dispositivos.",
+      "fix": "Configuración, Privacidad y seguridad, Historial de actividades. Desactiva la recopilación y borra lo que ya haya guardado, porque desactivarlo no borra el historial."
+    },
+    "activity-feed.off": {
+      "title": "Historial de actividad desactivado",
+      "reveals": "Windows no está construyendo una línea de tiempo de lo que abres.",
+      "fix": "Nada que hacer."
+    },
+    "recall.unset": {
+      "title": "Recall no está desactivado explícitamente",
+      "reveals": "Recall hace capturas periódicas de todo lo que aparece en pantalla y las indexa para poder buscarlas después. Las guarda en local, pero ese almacén es una imagen de todo lo que has mirado, incluidos mensajes, banca y cualquier cosa que te haya rellenado un gestor de contraseñas. Aquí no hay ninguna política puesta que lo impida.",
+      "fix": "Pon la política DisableAIDataAnalysis para que se quede apagado pase lo que pase con lo que decida una actualización futura. Esto importa incluso en máquinas que hoy no pueden ejecutar Recall, porque no cuesta nada y deja la cuestión zanjada de antemano."
+    },
+    "recall.off": {
+      "title": "Recall desactivado por política",
+      "reveals": "La captura de pantalla está apagada por política y no por un ajuste, así que una actualización no puede volver a encenderla sin más.",
+      "fix": "Nada que hacer."
+    },
+    "popularity-contest.on": {
+      "title": "Encuesta de paquetes activada",
+      "reveals": "Envía a la distribución, cada cierto tiempo, la lista de paquetes que tienes instalados y cuáles usas de verdad. Los datos se agregan, pero la lista de software de una máquina es en sí misma una huella, y una lista poco común es casi única.",
+      "fix": "Pon PARTICIPATE a \"no\" en /etc/popularity-contest.conf, o desinstala el paquete. No depende nada de él."
+    },
+    "popularity-contest.off": {
+      "title": "Encuesta de paquetes desactivada",
+      "reveals": "La encuesta está instalada pero configurada para no participar.",
+      "fix": "Nada que hacer."
+    },
+    "popularity-contest.absent": {
+      "title": "Sin encuesta de paquetes",
+      "reveals": "El paquete de la encuesta no está instalado en este sistema.",
+      "fix": "Nada que hacer."
+    },
+    "crash-reporting.on": {
+      "title": "Informe de cuelgues activado",
+      "reveals": "Cuando algo se cuelga, se puede enviar un informe fuera de la máquina. Los volcados llevan trozos de lo que hubiera en memoria en ese momento, o sea trozos de lo que estuvieras haciendo.",
+      "fix": "Apágalo si prefieres no enviarlos. El coste es que los desarrolladores reciben menos informes de sus propios fallos."
+    },
+    "crash-reporting.off": {
+      "title": "Informe de cuelgues desactivado",
+      "reveals": "Los informes de cuelgue no se recogen ni se envían.",
+      "fix": "Nada que hacer."
+    },
+    "crash-reporting.absent": {
+      "title": "Sin informador de cuelgues",
+      "reveals": "No hay ningún servicio de informe de cuelgues configurado en esta máquina.",
+      "fix": "Nada que hacer."
+    },
+
+    "installed-fonts.stock": {
+      "title": "El juego de fuentes parece normal",
+      "reveals": "La lista de fuentes que tienes instaladas es una de las señales más fuertes de la huella del navegador, y una en la que casi nadie piensa. Una web puede ir probándolas de una en una y construir la lista. La tuya se parece bastante a una instalación de fábrica, así que por sí sola no te señala.",
+      "fix": "Nada que hacer, y merece la pena que siga así: instalar paquetes grandes de fuentes es de las formas más fáciles de volverse identificable sin darse cuenta."
+    },
+    "installed-fonts.many": {
+      "title": "Juego de fuentes inusualmente grande",
+      "reveals": "Una web puede comprobar qué fuentes tienes, una a una, y un juego de este tamaño es muy poco probable que coincida con el de nadie más. Esto no es un ajuste que activaras: es el rastro que dejan las herramientas de diseño, las suites de ofimática y los paquetes de idiomas, y funciona como identificador te guste o no.",
+      "fix": "Quitar fuentes que no uses reduce la señal, pero solo Firefox con resistFingerprinting impide de verdad que se responda a la pregunta, porque declara una lista fija a todas las webs. Ese es el arreglo de verdad, y está en el hallazgo de abajo."
+    },
+    "firefox.absent": {
+      "title": "Sin perfil de Firefox",
+      "reveals": "Firefox no está instalado, o nunca se ha abierto. Merece mencionarse porque es el único navegador mayoritario con un interruptor que ataca de verdad la huella digital.",
+      "fix": "Nada que hacer. Si lo que te preocupa es la huella, Firefox con resistFingerprinting, o el Tor Browser, son lo único que ayuda de forma significativa."
+    },
+    "firefox.resist-on": {
+      "title": "Firefox está resistiendo la huella digital",
+      "reveals": "resistFingerprinting está activado, así que Firefox declara a todas las webs un tamaño de pantalla fijo, una zona horaria fija, una lista de fuentes fija y un perfil de hardware fijo. Dejas de parecerte a ti y pasas a parecerte a toda la gente que usa el mismo ajuste, que es la única defensa que funciona.",
+      "fix": "Nada que hacer. Ten en cuenta que es la razón de que algunas webs se vean raras y de que tu reloj les parezca mal: eso es el ajuste funcionando, no rompiéndose."
+    },
+    "firefox.resist-off": {
+      "title": "Firefox no está resistiendo la huella digital",
+      "reveals": "Firefox está declarando tu tamaño de pantalla real, tu zona horaria, tus fuentes y tu hardware a cada web que visitas. Juntas, esas cosas suelen bastar para distinguir un navegador entre millones sin guardar nada en tu máquina, así que borrar las cookies no lo toca.",
+      "fix": "Pon privacy.resistFingerprinting a true en about:config, o usa el Tor Browser, que ya viene con ello activado. Cuenta con que algunas webs se vean mal y con que tu zona horaria salga como UTC. Ese es el precio, y es justo el objetivo: cambias parecer correcto por parecerte a todo el mundo."
+    },
+
+    "dns-servers.plain": {
+      "title": "Servidores DNS",
+      "reveals": "Cada web que visitas se resuelve a través de estos servidores. Si las consultas no van cifradas, quien los administre y cualquiera por el camino ve el nombre de cada máquina a la que te conectas, que es casi todo tu historial de navegación en texto claro.",
+      "fix": "Activa el DNS cifrado y elige un resolutor en el que estés dispuesto a confiar, porque cifrar la consulta mueve la confianza en vez de quitarla. En Windows está en Configuración, Red e Internet; en Linux depende de tu resolutor, normalmente systemd-resolved o dnsmasq. Ojo: el TLS sigue filtrando el nombre de la máquina por el SNI salvo que la web admita Encrypted Client Hello."
+    },
+    "dns-servers.stub": {
+      "title": "El DNS pasa por un resolutor local",
+      "reveals": "El resolutor que aparece aquí está en esta misma máquina, así que algo local hace las consultas de verdad y este archivo ya no dice quién acaba viéndolas. Puede ser systemd-resolved, dnsmasq o un cliente de VPN, y que las consultas vayan cifradas depende por completo de cómo esté configurado eso.",
+      "fix": "Mira hacia dónde reenvía ese resolutor local, y si lo hace por DoT o DoH. Una dirección de bucle local en resolv.conf no es prueba de nada en ningún sentido."
+    },
+    "dns-servers.none": {
+      "title": "Sin servidores DNS configurados",
+      "reveals": "No hay ningún resolutor puesto en ninguna interfaz, lo que normalmente significa que ahora mismo no hay nada conectado.",
+      "fix": "Merece la pena volver a ejecutarlo estando en línea, porque esto no dice nada de lo que pasa cuando te conectas."
+    },
+
+    "check.silent": {
+      "title": "Una comprobación no devolvió nada",
+      "reveals": "Una de las comprobaciones no devolvió ningún resultado, lo cual es un fallo de esta herramienta y no una afirmación sobre tu máquina. Lo que fuera que tenía que mirar se ha quedado sin mirar.",
+      "fix": "Nada que puedas hacer tú. Repórtalo, porque una comprobación que se calla es justo el fallo que esta herramienta existe para evitar."
+    },
+    "unsupported-platform.notyet": {
+      "title": "Esta plataforma todavía no está cubierta",
+      "reveals": "Las comprobaciones están escritas para Windows, Linux y macOS. Aquí no se ha inspeccionado nada, y un informe vacío no significa una máquina limpia.",
+      "fix": "Añadir esta plataforma es lo siguiente que habría que escribir."
     }
   }
 }

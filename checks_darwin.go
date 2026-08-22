@@ -18,6 +18,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -193,4 +194,22 @@ func checkDiagnosticSubmission() []Finding {
 	}
 	return []Finding{{ID: "crash-reporting.absent", Fix: Clear, Reach: Local,
 		How: Measured, Source: where}}
+}
+
+// Where the browser-facing things live on macOS.
+
+func fontDirs() []string {
+	dirs := []string{"/System/Library/Fonts", "/Library/Fonts"}
+	if home, err := os.UserHomeDir(); err == nil {
+		dirs = append(dirs, filepath.Join(home, "Library", "Fonts"))
+	}
+	return dirs
+}
+
+func firefoxProfileDirs() []string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil
+	}
+	return []string{filepath.Join(home, "Library", "Application Support", "Firefox", "Profiles")}
 }
